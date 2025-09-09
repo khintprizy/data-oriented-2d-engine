@@ -318,11 +318,17 @@ struct MouseLookSystem
 struct KeyEdge
 {
 	int key;
+	bool isMouse;
 	bool prevDown = false;
-	KeyEdge(int k) : key(k) {}
+	KeyEdge(int k, bool mouse = false) : key(k), isMouse(mouse) {}
 	bool pressed(GLFWwindow* w)
 	{
-		bool down = glfwGetKey(w, key) == GLFW_PRESS;
+		bool down = false;
+		if (isMouse)
+			down = glfwGetMouseButton(w, key) == GLFW_PRESS;
+		else
+			down = glfwGetKey(w, key) == GLFW_PRESS;
+
 		bool rising = down && !prevDown;
 		prevDown = down;
 		return rising;
@@ -333,10 +339,10 @@ struct InputSystem
 {
 	int controlledIndex = -1;
 
-	KeyEdge fireKey{ GLFW_KEY_SPACE };
+	KeyEdge fireKey{ GLFW_MOUSE_BUTTON_1, true };
 	KeyEdge enemyKey{ GLFW_KEY_E };
 
-	void update(SpriteSet& S, GLFWwindow* win, float dt, const Texture2D* bulletTex, const Texture2D* enemyTex, int screenW, int screenH)
+	void update(SpriteSet& S, GLFWwindow* win, float dt, const Texture2D* bulletTex, const Texture2D* enemyTex, int worldW, int worldH, int zoom, int windowW, int windowH)
 	{
 		if (controlledIndex >= 0 && !S.isPlayerDead)
 		{
@@ -348,22 +354,45 @@ struct InputSystem
 			if (glfwGetKey(win, GLFW_KEY_W) == GLFW_PRESS) d.y += 1;
 			// DOD’de input sadece veriyi yazar; hareketi Movement yapar.
 			S.vel[controlledIndex] = d * speed;
+
 		}
 
 		// spawn projectile
 		if (fireKey.pressed(win)/* && controlledIndex >= 0*/ && !S.isPlayerDead)
 		{
-			glm::vec2 p = S.pos[controlledIndex];
-			glm::vec2 v = { 0.0f, 600.0f };      // upwards
+			//glm::vec2 p = S.pos[controlledIndex];
+			//glm::vec2 v = { 0.0f, 600.0f };      // upwards
+			//glm::vec2 bulletSize = { 24, 48 };
+			//S.spawnProjectile(bulletTex, p, v, bulletSize, 2.0f);
+
+			double mx, my;
+			glfwGetCursorPos(win, &mx, &my);
+			float worldX = (float)mx * zoom;
+			float worldY = ((float)windowH - (float)my) * zoom;
+
+			glm::vec2 pc = getCenter(S, controlledIndex);
+			glm::vec2 dir = glm::vec2(worldX, worldY) - pc;
+			float len = glm::length(dir);
+			if (len < .3f) return;
+			dir /= len;
+
+			float playerR = getRadius(S, controlledIndex);
+			float bulletR = 8.0f;
+			glm::vec2 spawnPos = pc + (dir * (playerR + bulletR + 2.0f));
+
+			float bulletSpeed = 1300.0f;
+			glm::vec2 v = dir * bulletSpeed;
+
 			glm::vec2 bulletSize = { 24, 48 };
-			S.spawnProjectile(bulletTex, p, v, bulletSize, 2.0f);
+
+			S.spawnProjectile(bulletTex, spawnPos, v, bulletSize, 2.0f);
 		}
 
 		// spawn enemy
 		if (enemyKey.pressed(win))
 		{
-			float x = (float)(rand() % screenW);
-			float y = (float)(rand() % screenH);
+			float x = (float)(rand() % windowW);
+			float y = (float)(rand() % windowH);
 			glm::vec2 p = { x, y };
 			glm::vec2 v = { 0.f, 0.f };
 			S.spawnEnemy(enemyTex, p, v, { 120, 120 }, -1.0f);
@@ -674,7 +703,7 @@ int main()
 
 		mouseLook.update(S, win, playerIndex, zoom, W, H);
 		// Input: yalnizca kontrol edilen enetitynin hizini gunceller
-		input.update(S, win, dt, &texBullet, &texEnemy, W * zoom, H * zoom);
+		input.update(S, win, dt, &texBullet, &texEnemy, (int)(W * zoom), (int)(H * zoom), zoom, W, H);
 
 		// Movement : butun alive entitylerde pos += vel*dt yapar.
 		movement.update(S, dt);
