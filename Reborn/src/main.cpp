@@ -573,6 +573,40 @@ struct CollisionSystem
 	}
 };
 
+struct EnemyAISystem
+{
+	float enemySpeed = 160.0f;
+	float facingOffsetDeg = 0.0f;
+
+	void update(SpriteSet& S, int playerIndex, float dt)
+	{
+		if (playerIndex < 0 || S.isPlayerDead || !S.alive[playerIndex]) return;
+
+		const glm::vec2 pc = getCenter(S, playerIndex);
+		const int N = S.count();
+
+		for (int i = 0; i < N; ++i)
+		{
+			if (!S.alive[i] || S.type[i] != ET_Enemy) continue;
+
+			glm::vec2 ec = getCenter(S, i);
+			glm::vec2 dir = pc - ec;
+			float len2 = glm::dot(dir, dir);
+
+			if (len2 > 0.0f)
+			{
+				dir *= 1.0f / std::sqrt(len2); // normalize
+				S.vel[i] = dir * enemySpeed;
+				S.rotDeg[i] = glm::degrees(std::atan2(dir.y, dir.x)) + facingOffsetDeg;
+			}
+			else
+			{
+				S.vel[i] = { 0,0 };
+			}
+		}
+	}
+};
+
 struct RenderSystem
 {
 	// Basit batching: texture id deðiþtikçe bind et.
@@ -691,8 +725,12 @@ int main()
 	RenderSystem render;
 	CollisionSystem collision;
 	MouseLookSystem mouseLook;
+	EnemyAISystem enemyAI;
 
 	mouseLook.facingOffsetDeg = 0.0f;
+
+	enemyAI.enemySpeed = 160.0f;
+	enemyAI.facingOffsetDeg = 90.0f;
 
 	double last = glfwGetTime();
 	while (!glfwWindowShouldClose(win))
@@ -719,6 +757,8 @@ int main()
 		mouseLook.update(S, win, playerIndex, zoom, W, H);
 		// Input: yalnizca kontrol edilen enetitynin hizini gunceller
 		input.update(S, win, dt, &texBullet, &texEnemy, (int)(W * zoom), (int)(H * zoom), zoom, W, H);
+
+		enemyAI.update(S, playerIndex, dt);
 
 		// Movement : butun alive entitylerde pos += vel*dt yapar.
 		movement.update(S, dt);
