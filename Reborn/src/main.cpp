@@ -16,6 +16,11 @@
 //#define STB_IMAGE_IMPLEMENTATION
 #include "vendor/stb_image/stb_image.h"
 
+static constexpr float kBulletFacingOffsetDeg = 90.0f;
+
+static constexpr float kMuzzleForward = 20.0f;
+static constexpr float kMuzzleRight = -55.0f;
+
 enum EntityType : uint8_t { ET_None = 0, ET_Player = 1, ET_Enemy = 2, ET_Bullet = 3 };
 
 static GLuint compileShader(GLenum type, const char* src)
@@ -286,6 +291,12 @@ static inline float getRadius(const SpriteSet& S, int i)
 	return 0.5f * std::min(S.size[i].x, S.size[i].y);
 }
 
+static inline float AngleDegFromVelocity(const glm::vec2& v)
+{
+	if (v.x == 0.0f && v.y == 0.0f) return 0.0f;
+	return glm::degrees(std::atan2(v.y, v.x));
+}
+
 struct MouseLookSystem
 {
 	// sprite in default yonune gore duzeltme
@@ -346,25 +357,24 @@ struct InputSystem
 	{
 		if (controlledIndex >= 0 && !S.isPlayerDead)
 		{
-			const float speed = 200.0f;
+			const float speed = 10.0f;
+			const float deltaMult = 100000.0f;
 			glm::vec2 d(0.0f);
 			if (glfwGetKey(win, GLFW_KEY_A) == GLFW_PRESS) d.x -= 1;
 			if (glfwGetKey(win, GLFW_KEY_D) == GLFW_PRESS) d.x += 1;
 			if (glfwGetKey(win, GLFW_KEY_S) == GLFW_PRESS) d.y -= 1;
 			if (glfwGetKey(win, GLFW_KEY_W) == GLFW_PRESS) d.y += 1;
+
+			if (d.x != 0 || d.y != 0) d = glm::normalize(d);
+
 			// DOD’de input sadece veriyi yazar; hareketi Movement yapar.
-			S.vel[controlledIndex] = d * speed;
+			S.vel[controlledIndex] = d * speed * dt * deltaMult;
 
 		}
 
 		// spawn projectile
-		if (fireKey.pressed(win)/* && controlledIndex >= 0*/ && !S.isPlayerDead)
+		if (fireKey.pressed(win) && !S.isPlayerDead)
 		{
-			//glm::vec2 p = S.pos[controlledIndex];
-			//glm::vec2 v = { 0.0f, 600.0f };      // upwards
-			//glm::vec2 bulletSize = { 24, 48 };
-			//S.spawnProjectile(bulletTex, p, v, bulletSize, 2.0f);
-
 			double mx, my;
 			glfwGetCursorPos(win, &mx, &my);
 			float worldX = (float)mx * zoom;
@@ -376,23 +386,28 @@ struct InputSystem
 			if (len < .3f) return;
 			dir /= len;
 
+			glm::vec2 right = glm::vec2(-dir.y, dir.x);
+
 			float playerR = getRadius(S, controlledIndex);
 			float bulletR = 8.0f;
-			glm::vec2 spawnPos = pc + (dir * (playerR + bulletR + 2.0f));
+
+			glm::vec2 spawnPos = pc + (dir * (playerR + bulletR + 2.0f + kMuzzleForward)) + (right * kMuzzleRight);
 
 			float bulletSpeed = 1300.0f;
 			glm::vec2 v = dir * bulletSpeed;
 
 			glm::vec2 bulletSize = { 24, 48 };
 
-			S.spawnProjectile(bulletTex, spawnPos, v, bulletSize, 2.0f);
+			int bi = S.spawnProjectile(bulletTex, spawnPos, v, bulletSize, 2.0f);
+
+			S.rotDeg[bi] = AngleDegFromVelocity(v) + kBulletFacingOffsetDeg;
 		}
 
 		// spawn enemy
 		if (enemyKey.pressed(win))
 		{
-			float x = (float)(rand() % windowW);
-			float y = (float)(rand() % windowH);
+			float x = (float)(rand() % worldW);
+			float y = (float)(rand() % worldH);
 			glm::vec2 p = { x, y };
 			glm::vec2 v = { 0.f, 0.f };
 			S.spawnEnemy(enemyTex, p, v, { 120, 120 }, -1.0f);
