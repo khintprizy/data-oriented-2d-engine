@@ -16,88 +16,88 @@
 //#define STB_IMAGE_IMPLEMENTATION
 #include "vendor/stb_image/stb_image.h"
 
-static constexpr float kBulletFacingOffsetDeg = 90.0f;
+//static constexpr float kBulletFacingOffsetDeg = 90.0f;
+//
+//static constexpr float kMuzzleForward = 20.0f;
+//static constexpr float kMuzzleRight = -55.0f;
+//
+//enum EntityType : uint8_t { ET_None = 0, ET_Player = 1, ET_Enemy = 2, ET_Bullet = 3 };
 
-static constexpr float kMuzzleForward = 20.0f;
-static constexpr float kMuzzleRight = -55.0f;
-
-enum EntityType : uint8_t { ET_None = 0, ET_Player = 1, ET_Enemy = 2, ET_Bullet = 3 };
-
-static GLuint compileShader(GLenum type, const char* src)
-{
-	GLuint s = glCreateShader(type);
-	glShaderSource(s, 1, &src, nullptr);
-	glCompileShader(s);
-	GLint ok = 0;
-	glGetShaderiv(s, GL_COMPILE_STATUS, &ok);
-	if (!ok)
-	{
-		char log[2048];
-		glGetShaderInfoLog(s, 2048, nullptr, log);
-		std::cerr << "Shader compile error \n" << log << std::endl;
-	}
-	return s;
-}
-
-static GLuint linkProgram(GLuint vs, GLuint fs)
-{
-	GLuint p = glCreateProgram();
-	glAttachShader(p, vs);
-	glAttachShader(p, fs);
-	glLinkProgram(p);
-	GLint ok = 0;
-	glGetProgramiv(p, GL_LINK_STATUS, &ok);
-	if (!ok)
-	{
-		char log[2048];
-		glGetProgramInfoLog(p, 2048, nullptr, log);
-		std::cerr << "Program link error \n" << log << std::endl;
-	}
-
-	glDetachShader(p, vs);
-	glDetachShader(p, fs);
-	glDeleteShader(vs);
-	glDeleteShader(fs);
-	return p;
-}
-
-
+//static GLuint compileShader(GLenum type, const char* src)
+//{
+//	GLuint s = glCreateShader(type);
+//	glShaderSource(s, 1, &src, nullptr);
+//	glCompileShader(s);
+//	GLint ok = 0;
+//	glGetShaderiv(s, GL_COMPILE_STATUS, &ok);
+//	if (!ok)
+//	{
+//		char log[2048];
+//		glGetShaderInfoLog(s, 2048, nullptr, log);
+//		std::cerr << "Shader compile error \n" << log << std::endl;
+//	}
+//	return s;
+//}
+//
+//static GLuint linkProgram(GLuint vs, GLuint fs)
+//{
+//	GLuint p = glCreateProgram();
+//	glAttachShader(p, vs);
+//	glAttachShader(p, fs);
+//	glLinkProgram(p);
+//	GLint ok = 0;
+//	glGetProgramiv(p, GL_LINK_STATUS, &ok);
+//	if (!ok)
+//	{
+//		char log[2048];
+//		glGetProgramInfoLog(p, 2048, nullptr, log);
+//		std::cerr << "Program link error \n" << log << std::endl;
+//	}
+//
+//	glDetachShader(p, vs);
+//	glDetachShader(p, fs);
+//	glDeleteShader(vs);
+//	glDeleteShader(fs);
+//	return p;
+//}
 
 
-struct Texture2D
-{
-	GLuint id = 0;
-	int width = 0, height = 0, channels = 0;
 
-	bool LoadFromFile(const std::string& path, bool flipY = true)
-	{
-		if (flipY) stbi_set_flip_vertically_on_load(true);
-		unsigned char* pixels = stbi_load(path.c_str(), &width, &height, &channels, 4);
 
-		if (!pixels)
-		{
-			std::cerr << "stb_image couldnt load " << path << std::endl;
-			return false;
-		}
-
-		if (id == 0) glGenTextures(1, &id);
-		glBindTexture(GL_TEXTURE_2D, id);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, 0);
-		stbi_image_free(pixels);
-		return true;
-	}
-
-	void Bind(int unit = 0) const {
-		glActiveTexture(GL_TEXTURE0 + unit);
-		glBindTexture(GL_TEXTURE_2D, id);
-	}
-};
+//struct Texture2D
+//{
+//	GLuint id = 0;
+//	int width = 0, height = 0, channels = 0;
+//
+//	bool LoadFromFile(const std::string& path, bool flipY = true)
+//	{
+//		if (flipY) stbi_set_flip_vertically_on_load(true);
+//		unsigned char* pixels = stbi_load(path.c_str(), &width, &height, &channels, 4);
+//
+//		if (!pixels)
+//		{
+//			std::cerr << "stb_image couldnt load " << path << std::endl;
+//			return false;
+//		}
+//
+//		if (id == 0) glGenTextures(1, &id);
+//		glBindTexture(GL_TEXTURE_2D, id);
+//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+//		glGenerateMipmap(GL_TEXTURE_2D);
+//		glBindTexture(GL_TEXTURE_2D, 0);
+//		stbi_image_free(pixels);
+//		return true;
+//	}
+//
+//	void Bind(int unit = 0) const {
+//		glActiveTexture(GL_TEXTURE0 + unit);
+//		glBindTexture(GL_TEXTURE_2D, id);
+//	}
+//};
 
 // sprite cizmek icin tek bir orta quad (vao/vbo/ebo)
 // pozisyon: merkezli -0.5..0.5, uv: 0..1
@@ -146,47 +146,47 @@ struct QuadMesh
 	}
 } gQuad;
 
-static const char* kSpriteVS = R"(#version 330 core
-layout(location=0) in vec2 aPos;
-layout(location=1) in vec2 aUV;
-out vec2 vUV;
-uniform mat4 uMVP;
-void main(){
-    vUV = aUV;
-    gl_Position = uMVP * vec4(aPos.xy, 0.0, 1.0);
-}
-)";
+//static const char* kSpriteVS = R"(#version 330 core
+//layout(location=0) in vec2 aPos;
+//layout(location=1) in vec2 aUV;
+//out vec2 vUV;
+//uniform mat4 uMVP;
+//void main(){
+//    vUV = aUV;
+//    gl_Position = uMVP * vec4(aPos.xy, 0.0, 1.0);
+//}
+//)";
+//
+//static const char* kSpriteFS = R"(#version 330 core
+//in vec2 vUV;
+//out vec4 FragColor;
+//uniform sampler2D uTex;
+//uniform vec4 uTint;
+//void main(){
+//    // Doku * renk çarpýmý. Alpha blending açýk.
+//    FragColor = texture(uTex, vUV) * uTint;
+//}
+//)";
 
-static const char* kSpriteFS = R"(#version 330 core
-in vec2 vUV;
-out vec4 FragColor;
-uniform sampler2D uTex;
-uniform vec4 uTint;
-void main(){
-    // Doku * renk çarpýmý. Alpha blending açýk.
-    FragColor = texture(uTex, vUV) * uTint;
-}
-)";
-
-struct SpriteRenderer
-{
-	GLuint program = 0;
-	GLint loc_uMVP = -1, loc_uTex = -1, loc_uTint = -1;
-
-	void Create()
-	{
-		if (program) return;
-
-		GLuint vs = compileShader(GL_VERTEX_SHADER, kSpriteVS);
-		GLuint fs = compileShader(GL_FRAGMENT_SHADER, kSpriteFS);
-
-		program = linkProgram(vs, fs);
-
-		loc_uMVP = glGetUniformLocation(program, "uMVP");
-		loc_uTex = glGetUniformLocation(program, "uTex");
-		loc_uTint = glGetUniformLocation(program, "uTint");
-	}
-} gRenderer;
+//struct SpriteRenderer
+//{
+//	GLuint program = 0;
+//	GLint loc_uMVP = -1, loc_uTex = -1, loc_uTint = -1;
+//
+//	void Create()
+//	{
+//		if (program) return;
+//
+//		GLuint vs = compileShader(GL_VERTEX_SHADER, kSpriteVS);
+//		GLuint fs = compileShader(GL_FRAGMENT_SHADER, kSpriteFS);
+//
+//		program = linkProgram(vs, fs);
+//
+//		loc_uMVP = glGetUniformLocation(program, "uMVP");
+//		loc_uTex = glGetUniformLocation(program, "uTex");
+//		loc_uTint = glGetUniformLocation(program, "uTint");
+//	}
+//} gRenderer;
 
 
 struct SpriteSet
@@ -281,21 +281,21 @@ struct SpriteSet
 	}
 };
 
-static inline glm::vec2 getCenter(const SpriteSet& S, int i)
-{
-	return S.pos[i] + (glm::vec2{ 0.5f, 0.5f } - S.origin[i]) * S.size[i];
-}
-
-static inline float getRadius(const SpriteSet& S, int i)
-{
-	return 0.5f * std::min(S.size[i].x, S.size[i].y);
-}
-
-static inline float AngleDegFromVelocity(const glm::vec2& v)
-{
-	if (v.x == 0.0f && v.y == 0.0f) return 0.0f;
-	return glm::degrees(std::atan2(v.y, v.x));
-}
+//static inline glm::vec2 getCenter(const SpriteSet& S, int i)
+//{
+//	return S.pos[i] + (glm::vec2{ 0.5f, 0.5f } - S.origin[i]) * S.size[i];
+//}
+//
+//static inline float getRadius(const SpriteSet& S, int i)
+//{
+//	return 0.5f * std::min(S.size[i].x, S.size[i].y);
+//}
+//
+//static inline float AngleDegFromVelocity(const glm::vec2& v)
+//{
+//	if (v.x == 0.0f && v.y == 0.0f) return 0.0f;
+//	return glm::degrees(std::atan2(v.y, v.x));
+//}
 
 struct MouseLookSystem
 {
