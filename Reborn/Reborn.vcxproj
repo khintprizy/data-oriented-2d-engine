@@ -136,6 +136,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\collision_system.cpp" />
+    <ClCompile Include="src\enemy_ai_system.cpp" />
     <ClCompile Include="src\gl_utils.cpp" />
     <ClCompile Include="src\input_system.cpp" />
     <ClCompile Include="src\lifetime_system.cpp" />
@@ -143,6 +144,7 @@
     <ClCompile Include="src\mouse_look_system.cpp" />
     <ClCompile Include="src\movement_system.cpp" />
     <ClCompile Include="src\quad_mesh.cpp" />
+    <ClCompile Include="src\render_system.cpp" />
     <ClCompile Include="src\spriteset.cpp" />
     <ClCompile Include="src\sprite_renderer.cpp" />
     <ClCompile Include="src\texture.cpp" />
@@ -158,10 +160,12 @@
     <ClInclude Include="include\core\types.hpp" />
     <ClInclude Include="include\ecs\spriteset.hpp" />
     <ClInclude Include="include\ecs\systems\collision_system.hpp" />
+    <ClInclude Include="include\ecs\systems\enemy_ai_system.hpp" />
     <ClInclude Include="include\ecs\systems\input_system.hpp" />
     <ClInclude Include="include\ecs\systems\lifetime_system.hpp" />
     <ClInclude Include="include\ecs\systems\mouse_look_system.hpp" />
     <ClInclude Include="include\ecs\systems\movement_system.hpp" />
+    <ClInclude Include="include\ecs\systems\render_system.hpp" />
     <ClInclude Include="src\vendor\glm\common.hpp" />
     <ClInclude Include="src\vendor\glm\detail\compute_common.hpp" />
     <ClInclude Include="src\vendor\glm\detail\compute_vector_decl.hpp" />

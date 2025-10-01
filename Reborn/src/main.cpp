@@ -1,20 +1,40 @@
 #include <iostream>
-#include <vector>
-#include <string>
-#include <cassert>
-#include <cstdlib>
-#include <cmath>
-
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <glm/gtc/matrix_transform.hpp>
 
-#include "vendor/glm/glm.hpp"
-#include "vendor/glm/gtc/matrix_transform.hpp"
-#include "vendor/glm/gtc/type_ptr.hpp"
+#include <constants.hpp>
+#include <render_context.hpp>
+#include <texture.hpp>
+#include "systems/render_system.hpp"
+
+#include <spriteset.hpp>
+#include <systems/input_system.hpp>
+#include <systems/movement_system.hpp>
+#include <systems/lifetime_system.hpp>
+#include <systems/collision_system.hpp>
+#include <systems/mouse_look_system.hpp>
+#include <systems/enemy_ai_system.hpp>
+
+
+
+//#include <iostream>
+//#include <vector>
+//#include <string>
+//#include <cassert>
+//#include <cstdlib>
+//#include <cmath>
+//
+//#include <GL/glew.h>
+//#include <GLFW/glfw3.h>
+//
+//#include "vendor/glm/glm.hpp"
+//#include "vendor/glm/gtc/matrix_transform.hpp"
+//#include "vendor/glm/gtc/type_ptr.hpp"
 
 
 //#define STB_IMAGE_IMPLEMENTATION
-#include "vendor/stb_image/stb_image.h"
+//#include "vendor/stb_image/stb_image.h"
 
 //static constexpr float kBulletFacingOffsetDeg = 90.0f;
 //
@@ -102,49 +122,49 @@
 // sprite cizmek icin tek bir orta quad (vao/vbo/ebo)
 // pozisyon: merkezli -0.5..0.5, uv: 0..1
 
-struct QuadMesh
-{
-	GLuint vao = 0, vbo = 0, ebo = 0;
-	void Create()
-	{
-		if (vao) return;
-
-		float verts[] = {
-			// x, y,         u, v
-			-0.5f, -0.5f,   0.0f, 0.0f, // 0
-			0.5f, -0.5f,    1.0f, 0.0f, // 1
-			0.5f, 0.5f,     1.0f, 1.0f, // 2
-			-0.5f, 0.5f,    0.0f, 1.0f  // 3
-		};
-
-		unsigned int idx[] = { 0, 1, 2,   2, 3, 0 };
-
-		glGenVertexArrays(1, &vao);
-		glGenBuffers(1, &vbo);
-		glGenBuffers(1, &ebo);
-
-		glBindVertexArray(vao);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(idx), idx, GL_STATIC_DRAW);
-
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-
-		glBindVertexArray(0);
-	}
-
-	void Draw() const
-	{
-		glBindVertexArray(vao);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		glBindVertexArray(0);
-	}
-} gQuad;
+//struct QuadMesh
+//{
+//	GLuint vao = 0, vbo = 0, ebo = 0;
+//	void Create()
+//	{
+//		if (vao) return;
+//
+//		float verts[] = {
+//			// x, y,         u, v
+//			-0.5f, -0.5f,   0.0f, 0.0f, // 0
+//			0.5f, -0.5f,    1.0f, 0.0f, // 1
+//			0.5f, 0.5f,     1.0f, 1.0f, // 2
+//			-0.5f, 0.5f,    0.0f, 1.0f  // 3
+//		};
+//
+//		unsigned int idx[] = { 0, 1, 2,   2, 3, 0 };
+//
+//		glGenVertexArrays(1, &vao);
+//		glGenBuffers(1, &vbo);
+//		glGenBuffers(1, &ebo);
+//
+//		glBindVertexArray(vao);
+//		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+//		glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
+//
+//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+//		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(idx), idx, GL_STATIC_DRAW);
+//
+//		glEnableVertexAttribArray(0);
+//		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+//		glEnableVertexAttribArray(1);
+//		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+//
+//		glBindVertexArray(0);
+//	}
+//
+//	void Draw() const
+//	{
+//		glBindVertexArray(vao);
+//		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+//		glBindVertexArray(0);
+//	}
+//} gQuad;
 
 //static const char* kSpriteVS = R"(#version 330 core
 //layout(location=0) in vec2 aPos;
@@ -450,210 +470,210 @@ struct QuadMesh
 //	}
 //};
 
-struct CollisionSystem
-{
-	std::vector<int> bullets, enemies;
-	std::vector<glm::vec2> bulletCenters, enemyCenters;
-	std::vector<float>     bulletRadii, enemyRadii;
+//struct CollisionSystem
+//{
+//	std::vector<int> bullets, enemies;
+//	std::vector<glm::vec2> bulletCenters, enemyCenters;
+//	std::vector<float>     bulletRadii, enemyRadii;
+//
+//	void update(SpriteSet& S, int controlledIndex)
+//	{
+//		const int N = S.count();
+//
+//		// we list alive bullets and enemies
+//		//std::vector<int> bullets, enemies;
+//
+//		bullets.clear();
+//		enemies.clear();
+//
+//		bullets.reserve(N);
+//		enemies.reserve(N);
+//		for (int i = 0; i < N; ++i)
+//		{
+//			if (!S.alive[i]) continue;
+//			if (S.type[i] == ET_Bullet) bullets.push_back(i);
+//			else if (S.type[i] == ET_Enemy) enemies.push_back(i);
+//		}
+//
+//
+//		if (!S.isPlayerDead)
+//		{
+//			if (controlledIndex >= 0 && S.alive[controlledIndex]) {
+//				const glm::vec2 cP = getCenter(S, controlledIndex);
+//				const float     rP = getRadius(S, controlledIndex);
+//				for (int ei : enemies) {
+//					if (!S.alive[ei]) continue;
+//					const glm::vec2 cE = getCenter(S, ei);
+//					const float     rE = getRadius(S, ei);
+//					if (colliding(cE, cP, rE, rP)) {
+//						S.killThePlayer(controlledIndex);
+//						// if player is dead, no need for other checks
+//						return;
+//					}
+//				}
+//			}
+//		}
+//		
+//
+//		bulletCenters.resize(bullets.size());
+//		bulletRadii.resize(bullets.size());
+//		for (size_t b = 0; b < bullets.size(); ++b)
+//		{
+//			int bi = bullets[b];
+//			bulletCenters[b] = getCenter(S, bi);
+//			bulletRadii[b] = getRadius(S, bi);
+//		}
+//
+//		enemyCenters.resize(enemies.size());
+//		enemyRadii.resize(enemies.size());
+//		for (size_t e = 0; e < enemies.size(); ++e) {
+//			int ei = enemies[e];
+//			enemyCenters[e] = getCenter(S, ei);
+//			enemyRadii[e] = getRadius(S, ei);
+//		}
+//
+//		bool bulletsOuter = bullets.size() <= enemies.size();
+//
+//		if (bulletsOuter) {
+//			// bullets outer, enemies inner
+//			for (size_t b = 0; b < bullets.size(); ++b) {
+//				int bi = bullets[b];
+//				if (!S.alive[bi]) continue;
+//
+//				const glm::vec2& cB = bulletCenters[b];
+//				const float      rB = bulletRadii[b];
+//
+//				for (size_t e = 0; e < enemies.size(); ++e) {
+//					int ei = enemies[e];
+//					if (!S.alive[ei]) continue;
+//
+//					const glm::vec2& cE = enemyCenters[e];
+//					const float      rE = enemyRadii[e];
+//
+//					if (colliding(cE, cB, rE, rB)) {
+//						S.kill(bi);
+//						S.kill(ei);
+//						break;
+//					}
+//				}
+//			}
+//		}
+//		else {
+//			// enemies outer, bullets inner
+//			for (size_t e = 0; e < enemies.size(); ++e) {
+//				int ei = enemies[e];
+//				if (!S.alive[ei]) continue;
+//
+//				const glm::vec2& cE = enemyCenters[e];
+//				const float      rE = enemyRadii[e];
+//
+//				for (size_t b = 0; b < bullets.size(); ++b) {
+//					int bi = bullets[b];
+//					if (!S.alive[bi]) continue;
+//
+//					const glm::vec2& cB = bulletCenters[b];
+//					const float      rB = bulletRadii[b];
+//
+//					if (colliding(cE, cB, rE, rB)) {
+//						S.kill(bi);
+//						S.kill(ei);
+//						break;
+//					}
+//				}
+//			}
+//		}
+//	}
+//
+//	static inline bool colliding(const glm::vec2& center1, const glm::vec2& center2, float radius1, float radius2)
+//	{
+//		glm::vec2 d = center1 - center2;
+//		float rsum = radius1 + radius2;
+//
+//		return (glm::dot(d, d) <= rsum * rsum);
+//	}
+//};
 
-	void update(SpriteSet& S, int controlledIndex)
-	{
-		const int N = S.count();
+//struct EnemyAISystem
+//{
+//	float enemySpeed = 160.0f;
+//	float facingOffsetDeg = 0.0f;
+//
+//	void update(SpriteSet& S, int playerIndex, float dt)
+//	{
+//		if (playerIndex < 0 || S.isPlayerDead || !S.alive[playerIndex]) return;
+//
+//		const glm::vec2 pc = getCenter(S, playerIndex);
+//		const int N = S.count();
+//
+//		for (int i = 0; i < N; ++i)
+//		{
+//			if (!S.alive[i] || S.type[i] != ET_Enemy) continue;
+//
+//			glm::vec2 ec = getCenter(S, i);
+//			glm::vec2 dir = pc - ec;
+//			float len2 = glm::dot(dir, dir);
+//
+//			if (len2 > 0.0f)
+//			{
+//				dir *= 1.0f / std::sqrt(len2); // normalize
+//				S.vel[i] = dir * enemySpeed;
+//				S.rotDeg[i] = glm::degrees(std::atan2(dir.y, dir.x)) + facingOffsetDeg;
+//			}
+//			else
+//			{
+//				S.vel[i] = { 0,0 };
+//			}
+//		}
+//	}
+//};
 
-		// we list alive bullets and enemies
-		//std::vector<int> bullets, enemies;
-
-		bullets.clear();
-		enemies.clear();
-
-		bullets.reserve(N);
-		enemies.reserve(N);
-		for (int i = 0; i < N; ++i)
-		{
-			if (!S.alive[i]) continue;
-			if (S.type[i] == ET_Bullet) bullets.push_back(i);
-			else if (S.type[i] == ET_Enemy) enemies.push_back(i);
-		}
-
-
-		if (!S.isPlayerDead)
-		{
-			if (controlledIndex >= 0 && S.alive[controlledIndex]) {
-				const glm::vec2 cP = getCenter(S, controlledIndex);
-				const float     rP = getRadius(S, controlledIndex);
-				for (int ei : enemies) {
-					if (!S.alive[ei]) continue;
-					const glm::vec2 cE = getCenter(S, ei);
-					const float     rE = getRadius(S, ei);
-					if (colliding(cE, cP, rE, rP)) {
-						S.killThePlayer(controlledIndex);
-						// if player is dead, no need for other checks
-						return;
-					}
-				}
-			}
-		}
-		
-
-		bulletCenters.resize(bullets.size());
-		bulletRadii.resize(bullets.size());
-		for (size_t b = 0; b < bullets.size(); ++b)
-		{
-			int bi = bullets[b];
-			bulletCenters[b] = getCenter(S, bi);
-			bulletRadii[b] = getRadius(S, bi);
-		}
-
-		enemyCenters.resize(enemies.size());
-		enemyRadii.resize(enemies.size());
-		for (size_t e = 0; e < enemies.size(); ++e) {
-			int ei = enemies[e];
-			enemyCenters[e] = getCenter(S, ei);
-			enemyRadii[e] = getRadius(S, ei);
-		}
-
-		bool bulletsOuter = bullets.size() <= enemies.size();
-
-		if (bulletsOuter) {
-			// bullets outer, enemies inner
-			for (size_t b = 0; b < bullets.size(); ++b) {
-				int bi = bullets[b];
-				if (!S.alive[bi]) continue;
-
-				const glm::vec2& cB = bulletCenters[b];
-				const float      rB = bulletRadii[b];
-
-				for (size_t e = 0; e < enemies.size(); ++e) {
-					int ei = enemies[e];
-					if (!S.alive[ei]) continue;
-
-					const glm::vec2& cE = enemyCenters[e];
-					const float      rE = enemyRadii[e];
-
-					if (colliding(cE, cB, rE, rB)) {
-						S.kill(bi);
-						S.kill(ei);
-						break;
-					}
-				}
-			}
-		}
-		else {
-			// enemies outer, bullets inner
-			for (size_t e = 0; e < enemies.size(); ++e) {
-				int ei = enemies[e];
-				if (!S.alive[ei]) continue;
-
-				const glm::vec2& cE = enemyCenters[e];
-				const float      rE = enemyRadii[e];
-
-				for (size_t b = 0; b < bullets.size(); ++b) {
-					int bi = bullets[b];
-					if (!S.alive[bi]) continue;
-
-					const glm::vec2& cB = bulletCenters[b];
-					const float      rB = bulletRadii[b];
-
-					if (colliding(cE, cB, rE, rB)) {
-						S.kill(bi);
-						S.kill(ei);
-						break;
-					}
-				}
-			}
-		}
-	}
-
-	static inline bool colliding(const glm::vec2& center1, const glm::vec2& center2, float radius1, float radius2)
-	{
-		glm::vec2 d = center1 - center2;
-		float rsum = radius1 + radius2;
-
-		return (glm::dot(d, d) <= rsum * rsum);
-	}
-};
-
-struct EnemyAISystem
-{
-	float enemySpeed = 160.0f;
-	float facingOffsetDeg = 0.0f;
-
-	void update(SpriteSet& S, int playerIndex, float dt)
-	{
-		if (playerIndex < 0 || S.isPlayerDead || !S.alive[playerIndex]) return;
-
-		const glm::vec2 pc = getCenter(S, playerIndex);
-		const int N = S.count();
-
-		for (int i = 0; i < N; ++i)
-		{
-			if (!S.alive[i] || S.type[i] != ET_Enemy) continue;
-
-			glm::vec2 ec = getCenter(S, i);
-			glm::vec2 dir = pc - ec;
-			float len2 = glm::dot(dir, dir);
-
-			if (len2 > 0.0f)
-			{
-				dir *= 1.0f / std::sqrt(len2); // normalize
-				S.vel[i] = dir * enemySpeed;
-				S.rotDeg[i] = glm::degrees(std::atan2(dir.y, dir.x)) + facingOffsetDeg;
-			}
-			else
-			{
-				S.vel[i] = { 0,0 };
-			}
-		}
-	}
-};
-
-struct RenderSystem
-{
-	// Basit batching: texture id deðiþtikçe bind et.
-	// (Bir sonraki adým: indeksleri texture’a göre gruplayýp tek seferde çizmek,
-	//  daha sonraki adým: instancing / UBO / SSBO.)
-
-	void draw(const SpriteSet& S, const glm::mat4& proj)
-	{
-		glUseProgram(gRenderer.program);
-		glUniform1i(gRenderer.loc_uTex, 0);
-
-		GLuint currentTex = 0;
-		const int N = S.count();
-		for (int i = 0; i < N; i++)
-		{
-			if (!S.alive[i]) continue;
-
-			const Texture2D* t = S.tex[i];
-			assert(t && t->id);
-
-			if (t->id != currentTex) // Texture degistiyse sadece o an bind et
-			{
-				t->Bind(0);
-				currentTex = t->id;
-			}
-
-			// Pivotu pixel cinsinden hesapla (origin 0..1 => size ile carp)
-			//glm::vec2 pivot = { S.origin[i].x * S.size[i].x, S.origin[i].y * S.size[i].y };
-			glm::vec2 pivot = (S.origin[i] - glm::vec2(0.5f, 0.5f)) * S.size[i];
-
-			// model matrisi: T(poz) * T(pivot) * R * T(-pivot) * S(size)
-			glm::mat4 model(1.0f);
-			model = glm::translate(model, glm::vec3(S.pos[i], 0.0f));
-			model = glm::translate(model, glm::vec3(pivot, 0.0f));
-			model = glm::rotate(model, glm::radians(S.rotDeg[i]), glm::vec3(0, 0, 1));
-			model = glm::translate(model, glm::vec3(-pivot, 0.0f));
-			model = glm::scale(model, glm::vec3(S.size[i], 1.0f));
-
-			glm::mat4 mvp = proj * model;
-
-			// Uniformlari yaz ve quad i ciz
-			glUniformMatrix4fv(gRenderer.loc_uMVP, 1, GL_FALSE, glm::value_ptr(mvp));
-			glUniform4fv(gRenderer.loc_uTint, 1, glm::value_ptr(S.tint[i]));
-			gQuad.Draw();
-		}
-	}
-};
+//struct RenderSystem
+//{
+//	// Basit batching: texture id deðiþtikçe bind et.
+//	// (Bir sonraki adým: indeksleri texture’a göre gruplayýp tek seferde çizmek,
+//	//  daha sonraki adým: instancing / UBO / SSBO.)
+//
+//	void draw(const SpriteSet& S, const glm::mat4& proj)
+//	{
+//		glUseProgram(gRenderer.program);
+//		glUniform1i(gRenderer.loc_uTex, 0);
+//
+//		GLuint currentTex = 0;
+//		const int N = S.count();
+//		for (int i = 0; i < N; i++)
+//		{
+//			if (!S.alive[i]) continue;
+//
+//			const Texture2D* t = S.tex[i];
+//			assert(t && t->id);
+//
+//			if (t->id != currentTex) // Texture degistiyse sadece o an bind et
+//			{
+//				t->Bind(0);
+//				currentTex = t->id;
+//			}
+//
+//			// Pivotu pixel cinsinden hesapla (origin 0..1 => size ile carp)
+//			//glm::vec2 pivot = { S.origin[i].x * S.size[i].x, S.origin[i].y * S.size[i].y };
+//			glm::vec2 pivot = (S.origin[i] - glm::vec2(0.5f, 0.5f)) * S.size[i];
+//
+//			// model matrisi: T(poz) * T(pivot) * R * T(-pivot) * S(size)
+//			glm::mat4 model(1.0f);
+//			model = glm::translate(model, glm::vec3(S.pos[i], 0.0f));
+//			model = glm::translate(model, glm::vec3(pivot, 0.0f));
+//			model = glm::rotate(model, glm::radians(S.rotDeg[i]), glm::vec3(0, 0, 1));
+//			model = glm::translate(model, glm::vec3(-pivot, 0.0f));
+//			model = glm::scale(model, glm::vec3(S.size[i], 1.0f));
+//
+//			glm::mat4 mvp = proj * model;
+//
+//			// Uniformlari yaz ve quad i ciz
+//			glUniformMatrix4fv(gRenderer.loc_uMVP, 1, GL_FALSE, glm::value_ptr(mvp));
+//			glUniform4fv(gRenderer.loc_uTint, 1, glm::value_ptr(S.tint[i]));
+//			gQuad.Draw();
+//		}
+//	}
+//};
 
 // - DOD akisi: Input -> Movement -> (diger sistemler) -> Render
 // - Veriyi merkezde "SpriteSet" tutuyoruz. Sistemler sirayla dosdogru diziler uzerinde calisiyor
@@ -685,99 +705,157 @@ int main()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	gQuad.Create();
-	gRenderer.Create();
 
-	Texture2D texPlayer, texBullet, texEnemy;
-	if (!texPlayer.LoadFromFile("assets/player.png")) { std::cerr << "player tex couldnt found\n"; return -1; }
-	if (!texBullet.LoadFromFile("assets/bullet.png")) { std::cerr << "bullet tex couldnt found\n"; return -1; }
-	if (!texEnemy.LoadFromFile("assets/enemy.png")) { std::cerr << "enemy tex couldnt found\n"; return -1; }
 
-	// piksel uzayi ortografik projeksiyon (0..W 0..H)
 
-	float zoom = 2.0f;
-	glm::mat4 proj = glm::ortho(0.0f, (float)W * zoom, 0.0f, (float)H * zoom, -1.0f, 1.0f);
 
-	SpriteSet S;
 
-	// oyuncu entitysi "entity = index"
+	core::RenderContext ctx;
+	ctx.init();
+
+	core::Texture2D texPlayer, texBullet, texEnemy;
+	if (!texPlayer.loadFromFile("assets/player.png")) return -1;
+	if (!texBullet.loadFromFile("assets/bullet.png")) return -1;
+	if (!texEnemy.loadFromFile("assets/enemy.png")) return -1;
+
+	float zoom = 2.f;
+	//const int W = 1920, H = 1080;
+	ctx.projection = glm::ortho(0.f, (float)W * zoom, 0.f, (float)H * zoom, -1.f, 1.f);
+
+	ecs::SpriteSet S;
 	S.isPlayerDead = false;
 	int playerIndex = S.add(&texPlayer,
-		{ W * 0.5f * zoom, H * 0.5f * zoom },    // pos
-		{ (float)texPlayer.width, (float)texPlayer.height },  // size
-		0.0f,     // rot
-		{ 0.5f, 0.5f },    // pivot
-		{ 1,1,1,1 },   // tint
-		{ 0,0 }, -1.0f, ET_Player);    // vel
+		{ W * 0.5f * zoom, H * 0.5f * zoom },
+		{ (float)texPlayer.width, (float)texPlayer.height },
+		0.f, { 0.5f,0.5f }, { 1,1,1,1 }, { 0,0 }, -1.f, core::ET_Player);
 
-	//// (Ýstersen performans farkýný görmek için birçok sprite ekleyebilirsin)
-	// for (int i=0; i<10; ++i) {
-	//     float x = (float)(rand() % W);
-	//     float y = (float)(rand() % H);
-	//     S.add(&texHero, {x,y}, {(float)texHero.width*0.5f, (float)texHero.height*0.5f});
-	// }
 
-	// Sistemler
-	InputSystem input;
-	input.controlledIndex = playerIndex;
-	MovementSystem movement;
-	LifeTimeSystem lifeTime;
-	RenderSystem render;
-	CollisionSystem collision;
-	MouseLookSystem mouseLook;
-	EnemyAISystem enemyAI;
+	ecs::InputSystem input; input.controlledIndex = playerIndex;
+	ecs::MovementSystem movement;
+	ecs::LifeTimeSystem lifetime;
+	ecs::CollisionSystem collision;
+	ecs::MouseLookSystem mouseLook; mouseLook.facingOffsetDeg = 0.f;
+	ecs::EnemyAISystem enemyAI; enemyAI.enemySpeed = 160.f; enemyAI.facingOffsetDeg = 90.f;
 
-	mouseLook.facingOffsetDeg = 0.0f;
-
-	enemyAI.enemySpeed = 160.0f;
-	enemyAI.facingOffsetDeg = 90.0f;
+	core::RenderSystem render;
 
 	double last = glfwGetTime();
-	while (!glfwWindowShouldClose(win))
-	{
+
+	while (!glfwWindowShouldClose(win)) {
 		glfwPollEvents();
-		double now = glfwGetTime();
-		float dt = float(now - last);
-		last = now;
-
-
-		fpsTimeAcc += dt;
-		fpsFrames += 1;
-
-		if (fpsTimeAcc >= 0.5) { // 0.5 sn’de bir güncelle
-			double fps = fpsFrames / fpsTimeAcc;
-			snprintf(titleBuf, sizeof(titleBuf), "Sprite DOD Starter  |  FPS: %.1f  |  dt: %.3f ms",
-				fps, 1000.0 * (fpsTimeAcc / fpsFrames));
-			glfwSetWindowTitle(win, titleBuf);
-			fpsTimeAcc = 0.0;
-			fpsFrames = 0;
-		}
-
+		double now = glfwGetTime(); float dt = float(now - last); last = now;
 
 		mouseLook.update(S, win, playerIndex, zoom, W, H);
-		// Input: yalnizca kontrol edilen enetitynin hizini gunceller
-		input.update(S, win, dt, &texBullet, &texEnemy, (int)(W * zoom), (int)(H * zoom), zoom, W, H);
-
+		input.update(S, win, dt, &texBullet, &texEnemy, int(W * zoom), int(H * zoom), (int)zoom, W, H);
 		enemyAI.update(S, playerIndex, dt);
-
-		// Movement : butun alive entitylerde pos += vel*dt yapar.
 		movement.update(S, dt);
-		lifeTime.update(S, dt);
+		lifetime.update(S, dt);
 		collision.update(S, playerIndex);
-
-		// gelecekte collisionSystem, lifetime system gibi seyler eklenebilir
-		// Render: veriye bakip cize
 
 		glClearColor(0.1f, 0.1f, 0.12f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-		render.draw(S, proj);
-
+		render.draw(S, ctx);
 		glfwSwapBuffers(win);
 	}
 
 	glfwDestroyWindow(win);
 	glfwTerminate();
 	return 0;
+
+
+	//gQuad.Create();
+	//gRenderer.Create();
+
+	//Texture2D texPlayer, texBullet, texEnemy;
+	//if (!texPlayer.LoadFromFile("assets/player.png")) { std::cerr << "player tex couldnt found\n"; return -1; }
+	//if (!texBullet.LoadFromFile("assets/bullet.png")) { std::cerr << "bullet tex couldnt found\n"; return -1; }
+	//if (!texEnemy.LoadFromFile("assets/enemy.png")) { std::cerr << "enemy tex couldnt found\n"; return -1; }
+
+	//// piksel uzayi ortografik projeksiyon (0..W 0..H)
+
+	//float zoom = 2.0f;
+	//glm::mat4 proj = glm::ortho(0.0f, (float)W * zoom, 0.0f, (float)H * zoom, -1.0f, 1.0f);
+
+	//SpriteSet S;
+
+	//// oyuncu entitysi "entity = index"
+	//S.isPlayerDead = false;
+	//int playerIndex = S.add(&texPlayer,
+	//	{ W * 0.5f * zoom, H * 0.5f * zoom },    // pos
+	//	{ (float)texPlayer.width, (float)texPlayer.height },  // size
+	//	0.0f,     // rot
+	//	{ 0.5f, 0.5f },    // pivot
+	//	{ 1,1,1,1 },   // tint
+	//	{ 0,0 }, -1.0f, ET_Player);    // vel
+
+	////// (Ýstersen performans farkýný görmek için birçok sprite ekleyebilirsin)
+	//// for (int i=0; i<10; ++i) {
+	////     float x = (float)(rand() % W);
+	////     float y = (float)(rand() % H);
+	////     S.add(&texHero, {x,y}, {(float)texHero.width*0.5f, (float)texHero.height*0.5f});
+	//// }
+
+	//// Sistemler
+	//InputSystem input;
+	//input.controlledIndex = playerIndex;
+	//MovementSystem movement;
+	//LifeTimeSystem lifeTime;
+	//RenderSystem render;
+	//CollisionSystem collision;
+	//MouseLookSystem mouseLook;
+	//EnemyAISystem enemyAI;
+
+	//mouseLook.facingOffsetDeg = 0.0f;
+
+	//enemyAI.enemySpeed = 160.0f;
+	//enemyAI.facingOffsetDeg = 90.0f;
+
+	//double last = glfwGetTime();
+	//while (!glfwWindowShouldClose(win))
+	//{
+	//	glfwPollEvents();
+	//	double now = glfwGetTime();
+	//	float dt = float(now - last);
+	//	last = now;
+
+
+	//	fpsTimeAcc += dt;
+	//	fpsFrames += 1;
+
+	//	if (fpsTimeAcc >= 0.5) { // 0.5 sn’de bir güncelle
+	//		double fps = fpsFrames / fpsTimeAcc;
+	//		snprintf(titleBuf, sizeof(titleBuf), "Sprite DOD Starter  |  FPS: %.1f  |  dt: %.3f ms",
+	//			fps, 1000.0 * (fpsTimeAcc / fpsFrames));
+	//		glfwSetWindowTitle(win, titleBuf);
+	//		fpsTimeAcc = 0.0;
+	//		fpsFrames = 0;
+	//	}
+
+
+	//	mouseLook.update(S, win, playerIndex, zoom, W, H);
+	//	// Input: yalnizca kontrol edilen enetitynin hizini gunceller
+	//	input.update(S, win, dt, &texBullet, &texEnemy, (int)(W * zoom), (int)(H * zoom), zoom, W, H);
+
+	//	enemyAI.update(S, playerIndex, dt);
+
+	//	// Movement : butun alive entitylerde pos += vel*dt yapar.
+	//	movement.update(S, dt);
+	//	lifeTime.update(S, dt);
+	//	collision.update(S, playerIndex);
+
+	//	// gelecekte collisionSystem, lifetime system gibi seyler eklenebilir
+	//	// Render: veriye bakip cize
+
+	//	glClearColor(0.1f, 0.1f, 0.12f, 1.0f);
+	//	glClear(GL_COLOR_BUFFER_BIT);
+	//	render.draw(S, proj);
+
+	//	glfwSwapBuffers(win);
+	//}
+
+	//glfwDestroyWindow(win);
+	//glfwTerminate();
+	//return 0;
 }
 
 

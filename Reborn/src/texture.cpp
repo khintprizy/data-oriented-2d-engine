@@ -4,7 +4,7 @@
 
 namespace core
 {
-	bool Texture2D::loadFromFile(const std::string& path, bool flipY = true)
+	bool Texture2D::loadFromFile(const std::string& path, bool flipY)
 	{
 		if (flipY) stbi_set_flip_vertically_on_load(true);
 		unsigned char* pixels = stbi_load(path.c_str(), &width, &height, &channels, 4);
@@ -28,7 +28,7 @@ namespace core
 		return true;
 	}
 
-	void Texture2D::bind(int unit = 0) const {
+	void Texture2D::bind(int unit) const {
 		glActiveTexture(GL_TEXTURE0 + unit);
 		glBindTexture(GL_TEXTURE_2D, id);
 	}

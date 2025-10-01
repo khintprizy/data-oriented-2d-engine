@@ -1,6 +1,6 @@
-#include "systems/mouse_look_system.hpp"
-#include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
+#include <glm/glm.hpp>
+#include "systems/mouse_look_system.hpp"
 
 namespace ecs {
     void MouseLookSystem::update(SpriteSet& S, GLFWwindow* win, int playerIndex,

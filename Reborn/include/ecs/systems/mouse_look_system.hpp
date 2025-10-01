@@ -1,6 +1,6 @@
 #pragma once
-#include <GLFW/glfw3.h>
 #include "spriteset.hpp"
+#include <GLFW/glfw3.h>
 
 namespace ecs {
     struct MouseLookSystem {

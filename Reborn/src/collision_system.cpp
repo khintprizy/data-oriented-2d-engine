@@ -1,6 +1,6 @@
 #include "systems/collision_system.hpp"
 #include <types.hpp>
-//#include <constants.hpp>
+#include <constants.hpp>
 
 namespace ecs
 {
@@ -118,5 +118,13 @@ namespace ecs
 				}
 			}
 		}
+	}
+
+	bool CollisionSystem::colliding(const glm::vec2& center1, const glm::vec2 center2, float radius1, float radius2)
+	{
+		glm::vec2 d = center1 - center2;
+		float rsum = radius1 + radius2;
+
+		return (glm::dot(d, d) <= rsum * rsum);
 	}
 }
